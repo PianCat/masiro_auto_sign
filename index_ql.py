@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+File: auto_sign.py(Masiro签到)
+Author: PianCat & Gedley
+cron: 0 30 8 * * *
+Update: 2023/12/4
+"""
 def sendMessage(title: str, content: str, type: str):
     """
     整合消息
