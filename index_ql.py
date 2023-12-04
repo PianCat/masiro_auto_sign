@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
 File: index_ql.py(Masiro签到)
 Author: PianCat & Gedley
 cron: 0 30 8 * * *
+new Env('Masiro签到');
 Update: 2023/12/4
 """
 import io
