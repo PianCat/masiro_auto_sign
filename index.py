@@ -2,8 +2,6 @@ import os
 import urllib.request
 import requests
 import re
-import datetime
-from sendNotify import SendMessage
 
 headers_post = {
     'Host': 'masiro.me',
@@ -149,67 +147,18 @@ def userCenterShow(session):
     url = "https://masiro.me/admin/userCenterShow"
     res = session.get(url=url, headers=headers_get_1, allow_redirects=False)
     a1 = re.findall('<span class="user-lev">(.*?)</span>', res.text)[0]
-    a2 = re.findall('(经验值:.*?) ', res.text)[0]
-    a = "等级:" + a1 + " " + a2
+    a2 = re.findall('经验值:<span class="exp">(.*?)</span>', res.text)[0]
+    a3 = re.findall('资历:(.*?)天', res.text)[0]
+    a = f"等级: {a1}, 经验值: {a2}, 资历: {a3}天"
     print(a)
     headers_get_3['Referer'] = 'https://masiro.me/admin/userCenterShow'
     headers_get_1['Referer'] = 'https://masiro.me/admin/userCenterShow'
     return session, a
 
-
-def wishingPondIndex(session):
-    url = "https://masiro.me/admin/wishingPondIndex"
-    session.get(url=url, headers=headers_get_1, allow_redirects=False)
-    headers_get_3['Referer'] = 'https://masiro.me/admin/wishingPondIndex'
-    headers_post['Referer'] = 'https://masiro.me/admin/wishingPondIndex'
-    headers_get_1['Referer'] = 'https://masiro.me/admin/wishingPondIndex'
-    return session
-
-
-def gachiyaWishingPond(session):
-    data = {'wp_id': '1', 'cost': '10'}
-    url = "https://masiro.me/admin/gachiyaWishingPond"
-    res = session.post(url=url, data=data, headers=headers_post, allow_redirects=False)
-    print(res.json()['msg'])
-    return session
-
-
-def novelView(session, novel_id: str):
-    url = "https://masiro.me/admin/novelView?novel_id={}".format(novel_id)
-    res = session.get(url=url, headers=headers_get_1, allow_redirects=False)
-    array = re.findall(r'href="/admin/novelReading\?cid=(.*?)" class="to-read" ', res.text)
-    headers_get_1['Referer'] = url
-    headers_get_3['Referer'] = url
-    session = checkAnnouncement(session)
-    return session, array
-
-
-def doThumbUp(session, cid: str):
-    url = "https://masiro.me/admin/novelReading?cid={}".format(cid)
-    session.get(url=url, headers=headers_get_1, allow_redirects=False)
-    headers_post['Referer'] = url
-    headers_get_1['Referer'] = url
-    headers_get_3['Referer'] = url
-    session = checkAnnouncement(session)
-    url = "https://masiro.me/admin/doThumbUp"
-    doThumbUp_data['id'] = cid
-    res = session.post(url=url, data=doThumbUp_data, headers=headers_post, allow_redirects=False)
-    print(res.json()['msg'])
-    return session
-
-
-def days():
-    x = datetime.date.today()
-    y = datetime.date(2022, 5, 31)
-    z = (x - y).days
-    return z
-
-
 def logout(session):
     url = "https://masiro.me/admin/auth/logout"
     session.get(url=url, headers=headers_get_1, allow_redirects=False)
     return 0
-
 
 def main(_name: str, _password: str):
     session = login(_name, _password)
@@ -218,29 +167,9 @@ def main(_name: str, _password: str):
     session = checkAnnouncement(session)
     session = home(session)
     session = dailySignIn(session)
-    session = wishingPondIndex(session)
-    session = checkAnnouncement(session)
-    session = gachiyaWishingPond(session)
-    session = home(session)
-    nid = 1
-    novel_id = str(nid)
-    session, array = novelView(session, novel_id)
-    day = days()
-    while (len(array) - day * 10) <= 10:
-        day -= int(len(array) / 10)
-        nid += 1
-        novel_id = str(nid)
-        session, array = novelView(session, novel_id)
-    i = 0
-    while i < 10:
-        session = doThumbUp(session, cid=array[day * 10 + i])
-        i += 1
-    session = home(session)
-    session, msg = userCenterShow(session)
     session = checkAnnouncement(session)
     session = home(session)
     logout(session)
-
 
 def handler(event, context):
     for user_pwd in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "login.txt")):
@@ -249,7 +178,6 @@ def handler(event, context):
         username = user_pwd[0]
         password = user_pwd[1]
         main(username, password)
-
 
 if __name__ == '__main__':
     handler('event', 'context')
